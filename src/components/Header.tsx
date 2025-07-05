@@ -11,7 +11,7 @@ const Header: React.FC = () => {
           <Link to="/" className="flex items-center space-x-2 text-white hover:text-primary-300 transition-colors">
             <div className="flex items-center space-x-2">
               <Network className="h-8 w-8 text-primary-400" />
-              <span className="text-xl font-bold">Polymer Labs</span>
+              <span className="text-xl font-bold">Ditsy Demo Labs</span>
             </div>
           </Link>
           
@@ -29,7 +29,7 @@ const Header: React.FC = () => {
               Chain Abstraction
             </Link>
             <a 
-              href="https://docs.polymerlabs.org" 
+              href="https://docs.polymerlabs.org/docs/build/start" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-white hover:text-primary-300 transition-colors"

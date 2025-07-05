@@ -1,5 +1,5 @@
 import React from 'react'
-import { Github, Twitter, MessageCircle, Book } from 'lucide-react'
+import { Github, Twitter, MessageCircle, Book, ExternalLink } from 'lucide-react'
 
 const Footer: React.FC = () => {
   return (
@@ -7,20 +7,35 @@ const Footer: React.FC = () => {
       <div className="container mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
           <div>
-            <h3 className="text-lg font-semibold text-white mb-4">Polymer Labs</h3>
+            <h3 className="text-lg font-semibold text-white mb-4">Ditsy Demo Labs</h3>
             <p className="text-gray-300 text-sm mb-4">
-              Building the future of cross-chain interoperability. 
+              Building the future of cross-chain interoperability with Polymer Labs technology. 
               Focus on your app, we'll handle the infrastructure.
             </p>
             <div className="flex space-x-4">
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a 
+                href="https://github.com/ditsyandrea22/TESTNET" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <Github className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
+              <a 
+                href="https://x.com/Crypto_ditsy" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-white transition-colors">
-                <MessageCircle className="h-5 w-5" />
+              <a 
+                href="https://docs.polymerlabs.org/docs/build/start" 
+                target="_blank" 
+                rel="noopener noreferrer"
+                className="text-gray-400 hover:text-white transition-colors"
+              >
+                <Book className="h-5 w-5" />
               </a>
             </div>
           </div>
@@ -28,9 +43,9 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-white font-medium mb-4">Product</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Bridge</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">SDK</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">API</a></li>
+              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">CrossL2Prover Bridge</a></li>
+              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Multi-Rollup Apps</a></li>
+              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Chain Abstraction</a></li>
               <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Analytics</a></li>
             </ul>
           </div>
@@ -38,28 +53,139 @@ const Footer: React.FC = () => {
           <div>
             <h4 className="text-white font-medium mb-4">Developers</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Documentation</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Tutorials</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Examples</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Support</a></li>
+              <li>
+                <a 
+                  href="https://docs.polymerlabs.org/docs/build/start" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1"
+                >
+                  <span>Documentation</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://docs.polymerlabs.org/docs/build/quickstart" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1"
+                >
+                  <span>Quick Start</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://docs.polymerlabs.org/docs/build/examples" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1"
+                >
+                  <span>Examples</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://github.com/ditsyandrea22/TESTNET" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1"
+                >
+                  <span>GitHub</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </li>
             </ul>
           </div>
           
           <div>
-            <h4 className="text-white font-medium mb-4">Company</h4>
+            <h4 className="text-white font-medium mb-4">Resources</h4>
             <ul className="space-y-2 text-sm">
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">About</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Blog</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Careers</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Contact</a></li>
+              <li>
+                <a 
+                  href="https://docs.polymerlabs.org/docs/learn/what-is-polymer" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1"
+                >
+                  <span>What is Polymer?</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://docs.polymerlabs.org/docs/learn/ibc" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1"
+                >
+                  <span>IBC Protocol</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://docs.polymerlabs.org/docs/learn/architecture" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1"
+                >
+                  <span>Architecture</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </li>
+              <li>
+                <a 
+                  href="https://x.com/Crypto_ditsy" 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1"
+                >
+                  <span>Follow Updates</span>
+                  <ExternalLink className="h-3 w-3" />
+                </a>
+              </li>
             </ul>
           </div>
         </div>
         
         <div className="border-t border-white/10 mt-8 pt-8 text-center">
           <p className="text-gray-400 text-sm">
-            © 2025 Polymer Labs. All rights reserved. Built with ❤️ for the multi-chain future.
+            © 2025 Ditsy Demo Labs. Built with ❤️ for the multi-chain future using Polymer Labs technology.
           </p>
+          <div className="flex justify-center items-center space-x-4 mt-2">
+            <a 
+              href="https://github.com/ditsyandrea22/TESTNET" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white text-xs flex items-center space-x-1"
+            >
+              <Github className="h-3 w-3" />
+              <span>Source Code</span>
+            </a>
+            <span className="text-gray-600">•</span>
+            <a 
+              href="https://docs.polymerlabs.org/docs/build/start" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white text-xs flex items-center space-x-1"
+            >
+              <Book className="h-3 w-3" />
+              <span>Polymer Docs</span>
+            </a>
+            <span className="text-gray-600">•</span>
+            <a 
+              href="https://x.com/Crypto_ditsy" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white text-xs flex items-center space-x-1"
+            >
+              <Twitter className="h-3 w-3" />
+              <span>@Crypto_ditsy</span>
+            </a>
+          </div>
         </div>
       </div>
     </footer>

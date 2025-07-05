@@ -1,24 +1,26 @@
 import React, { useState, useEffect } from 'react'
-import { ArrowRight, CheckCircle, Clock, AlertCircle, ExternalLink, Zap, Network, Shield } from 'lucide-react'
-import { useAccount, useNetwork } from 'wagmi'
-
-interface Transaction {
-  id: string
-  from: string
-  to: string
-  amount: string
-  status: 'pending' | 'completed' | 'failed'
-  timestamp: Date
-  txHash: string
-  blockConfirmations: number
-  estimatedTime: number
-}
+import { ArrowRight, CheckCircle, Clock, AlertCircle, ExternalLink, Zap, Network, Shield, Wallet, Copy, Activity } from 'lucide-react'
+import { useAccount, useNetwork, useSwitchNetwork, useBalance } from 'wagmi'
+import { useWalletClient } from 'wagmi'
+import { BRIDGE_CONTRACTS, DEMO_MODE, MIN_TRANSFER_AMOUNTS, CROSSL2_PROVER_ADDRESS } from '../config/contracts'
+import { realBridgeService, RealBridgeTransaction } from '../services/realBridgeService'
+import toast from 'react-hot-toast'
 
 const InteropDemo: React.FC = () => {
-  const { isConnected } = useAccount()
+  const { address, isConnected } = useAccount()
   const { chain } = useNetwork()
-  const [transactions, setTransactions] = useState<Transaction[]>([])
-  const [isProcessing, setIsProcessing] = useState(false)
+  const { switchNetwork } = useSwitchNetwork()
+  const { data: walletClient } = useWalletClient()
+  const { data: balance } = useBalance({ address })
+  
+  const [fromChain, setFromChain] = useState('ETHEREUM_SEPOLIA')
+  const [toChain, setToChain] = useState('OPTIMISM_SEPOLIA')
+  const [amount, setAmount] = useState('')
+  const [isTransferring, setIsTransferring] = useState(false)
+  const [transactions, setTransactions] = useState<RealBridgeTransaction[]>([])
+  const [gasCosts, setGasCosts] = useState({ gasCost: '0', totalCost: '0' })
+  const [chainSupport, setChainSupport] = useState<Record<string, boolean>>({})
+  const [minAmount, setMinAmount] = useState('0.001')
   const [realTimeStats, setRealTimeStats] = useState({
     totalTransactions: 1247892,
     activeChains: 4,
@@ -26,12 +28,33 @@ const InteropDemo: React.FC = () => {
     totalVolume: 45.7
   })
 
-  const chains = [
-    { name: 'Ethereum Sepolia', color: 'bg-blue-500', logo: '⟠', explorer: 'https://sepolia.etherscan.io' },
-    { name: 'Optimism Sepolia', color: 'bg-red-500', logo: '🔴', explorer: 'https://sepolia-optimism.etherscan.io' },
-    { name: 'Arbitrum Sepolia', color: 'bg-blue-400', logo: '🔵', explorer: 'https://sepolia.arbiscan.io' },
-    { name: 'Base Sepolia', color: 'bg-indigo-500', logo: '🔷', explorer: 'https://sepolia.basescan.org' }
-  ]
+  const chains = Object.entries(BRIDGE_CONTRACTS).map(([key, config]) => ({
+    key,
+    ...config
+  }))
+
+  // Load user transactions on mount and when address changes
+  useEffect(() => {
+    if (address) {
+      const userTxs = realBridgeService.getTransactionsByAddress(address)
+      setTransactions(userTxs)
+    }
+  }, [address])
+
+  // Check chain support and minimum amounts
+  useEffect(() => {
+    if (walletClient?.account) {
+      checkChainSupport()
+      getMinimumAmount()
+    }
+  }, [walletClient])
+
+  // Update gas estimates when amount or chains change
+  useEffect(() => {
+    if (amount && parseFloat(amount) > 0 && walletClient?.account) {
+      estimateGas()
+    }
+  }, [amount, fromChain, toChain, walletClient])
 
   // Simulate real-time stats updates
   useEffect(() => {
@@ -47,65 +70,158 @@ const InteropDemo: React.FC = () => {
     return () => clearInterval(interval)
   }, [])
 
-  // Update transaction confirmations
+  // Poll for transaction updates
   useEffect(() => {
     const interval = setInterval(() => {
-      setTransactions(prev => 
-        prev.map(tx => ({
-          ...tx,
-          blockConfirmations: tx.status === 'pending' ? tx.blockConfirmations + 1 : tx.blockConfirmations,
-          status: tx.blockConfirmations >= 12 && tx.status === 'pending' ? 'completed' : tx.status
-        }))
-      )
-    }, 2000)
+      if (address) {
+        const updatedTxs = realBridgeService.getTransactionsByAddress(address)
+        setTransactions(updatedTxs)
+      }
+    }, 10000) // Check every 10 seconds
 
     return () => clearInterval(interval)
-  }, [])
+  }, [address])
 
-  const simulateAdvancedTransaction = () => {
-    setIsProcessing(true)
-    
-    const fromChain = chains[Math.floor(Math.random() * chains.length)]
-    let toChain = chains[Math.floor(Math.random() * chains.length)]
-    while (toChain.name === fromChain.name) {
-      toChain = chains[Math.floor(Math.random() * chains.length)]
+  const checkChainSupport = async () => {
+    if (!walletClient?.account) return
+
+    try {
+      const provider = await walletClient.getProvider()
+      const support: Record<string, boolean> = {}
+      
+      for (const [key, config] of Object.entries(BRIDGE_CONTRACTS)) {
+        const isSupported = await realBridgeService.isChainSupported(config.chainId, provider)
+        support[key] = isSupported
+      }
+      
+      setChainSupport(support)
+    } catch (error) {
+      console.error('Error checking chain support:', error)
     }
-    
-    const newTx: Transaction = {
-      id: Math.random().toString(36).substr(2, 9),
-      from: fromChain.name,
-      to: toChain.name,
-      amount: (Math.random() * 5 + 0.1).toFixed(3),
-      status: 'pending',
-      timestamp: new Date(),
-      txHash: `0x${Math.random().toString(16).substr(2, 64)}`,
-      blockConfirmations: 0,
-      estimatedTime: Math.floor(Math.random() * 180) + 60 // 1-4 minutes
-    }
-    
-    setTransactions(prev => [newTx, ...prev.slice(0, 4)])
-    
-    // Simulate processing time
-    setTimeout(() => {
-      setTransactions(prev => 
-        prev.map(tx => 
-          tx.id === newTx.id 
-            ? { 
-                ...tx, 
-                status: Math.random() > 0.05 ? 'pending' : 'failed',
-                blockConfirmations: Math.random() > 0.05 ? 1 : 0
-              }
-            : tx
-        )
-      )
-      setIsProcessing(false)
-    }, 2000)
   }
 
-  const getStatusIcon = (status: Transaction['status']) => {
+  const getMinimumAmount = async () => {
+    if (!walletClient?.account) return
+
+    try {
+      const provider = await walletClient.getProvider()
+      const min = await realBridgeService.getMinimumAmount(provider)
+      setMinAmount(min)
+    } catch (error) {
+      console.error('Error getting minimum amount:', error)
+    }
+  }
+
+  const estimateGas = async () => {
+    if (!walletClient?.account || !amount) return
+
+    try {
+      const provider = await walletClient.getProvider()
+      const costs = await realBridgeService.estimateGasCosts(
+        fromChain,
+        toChain,
+        amount,
+        provider
+      )
+      setGasCosts(costs)
+    } catch (error) {
+      console.error('Gas estimation failed:', error)
+    }
+  }
+
+  const handleSwapChains = () => {
+    const temp = fromChain
+    setFromChain(toChain)
+    setToChain(temp)
+  }
+
+  const handleSwitchNetwork = async (chainKey: string) => {
+    const targetChain = chains.find(c => c.key === chainKey)
+    if (targetChain && switchNetwork) {
+      try {
+        await switchNetwork(targetChain.chainId)
+      } catch (error) {
+        console.error('Failed to switch network:', error)
+        toast.error('Failed to switch network')
+      }
+    }
+  }
+
+  const executeRealTransfer = async () => {
+    if (!isConnected || !walletClient || !amount || !address) {
+      toast.error('Please connect your wallet and enter an amount')
+      return
+    }
+
+    const fromChainConfig = chains.find(c => c.key === fromChain)
+    const toChainConfig = chains.find(c => c.key === toChain)
+    const currentMinAmount = parseFloat(minAmount)
+    
+    if (parseFloat(amount) < currentMinAmount) {
+      toast.error(`Minimum transfer amount is ${minAmount} ETH`)
+      return
+    }
+
+    // Check if chains are supported
+    if (!chainSupport[fromChain] || !chainSupport[toChain]) {
+      toast.error('One or both chains are not supported by CrossL2Prover')
+      return
+    }
+
+    // Check if on correct network
+    if (chain?.id !== fromChainConfig?.chainId) {
+      toast.error(`Please switch to ${fromChainConfig?.name}`)
+      return
+    }
+
+    // Check balance
+    if (balance && parseFloat(balance.formatted) < parseFloat(gasCosts.totalCost)) {
+      toast.error('Insufficient balance for transfer and gas fees')
+      return
+    }
+
+    setIsTransferring(true)
+    
+    try {
+      const signer = await walletClient.getSigner()
+      
+      const transaction = await realBridgeService.initiateBridge(
+        fromChain,
+        toChain,
+        amount,
+        signer
+      )
+      
+      // Add to local state immediately
+      setTransactions(prev => [transaction, ...prev])
+      
+      // Clear form
+      setAmount('')
+      
+      toast.success('CrossL2Prover transfer initiated successfully!')
+      
+    } catch (error: any) {
+      console.error('Transfer failed:', error)
+      if (error.message.includes('User rejected')) {
+        toast.error('Transaction was rejected')
+      } else {
+        toast.error(`Transfer failed: ${error.message}`)
+      }
+    } finally {
+      setIsTransferring(false)
+    }
+  }
+
+  const getStatusIcon = (status: RealBridgeTransaction['status']) => {
     switch (status) {
       case 'pending':
         return <Clock className="h-4 w-4 text-yellow-400 animate-spin" />
+      case 'confirmed':
+        return <CheckCircle className="h-4 w-4 text-blue-400" />
+      case 'proving':
+        return <Activity className="h-4 w-4 text-purple-400 animate-pulse" />
+      case 'bridging':
+        return <Network className="h-4 w-4 text-indigo-400 animate-pulse" />
       case 'completed':
         return <CheckCircle className="h-4 w-4 text-green-400" />
       case 'failed':
@@ -113,8 +229,42 @@ const InteropDemo: React.FC = () => {
     }
   }
 
-  const getChainInfo = (chainName: string) => {
-    return chains.find(chain => chain.name === chainName)
+  const getStatusColor = (status: RealBridgeTransaction['status']) => {
+    switch (status) {
+      case 'pending': return 'text-yellow-400'
+      case 'confirmed': return 'text-blue-400'
+      case 'proving': return 'text-purple-400'
+      case 'bridging': return 'text-indigo-400'
+      case 'completed': return 'text-green-400'
+      case 'failed': return 'text-red-400'
+      default: return 'text-gray-400'
+    }
+  }
+
+  const getStatusDescription = (status: RealBridgeTransaction['status']) => {
+    switch (status) {
+      case 'pending': return 'Transaction pending confirmation'
+      case 'confirmed': return 'Transaction confirmed, generating proof'
+      case 'proving': return 'Proof generated, waiting for execution'
+      case 'bridging': return 'Executing cross-chain transfer'
+      case 'completed': return 'Transfer completed successfully'
+      case 'failed': return 'Transfer failed'
+      default: return 'Unknown status'
+    }
+  }
+
+  const copyToClipboard = (text: string) => {
+    navigator.clipboard.writeText(text)
+    toast.success('Copied to clipboard')
+  }
+
+  const getCurrentChainInfo = () => {
+    return chains.find(c => c.chainId === chain?.id)
+  }
+
+  const isCorrectNetwork = () => {
+    const fromChainInfo = chains.find(c => c.key === fromChain)
+    return fromChainInfo && chain?.id === fromChainInfo.chainId
   }
 
   return (
@@ -122,12 +272,26 @@ const InteropDemo: React.FC = () => {
       <div className="container mx-auto">
         <div className="text-center mb-16">
           <h2 className="text-4xl md:text-5xl font-bold text-white mb-6">
-            Live Cross-Chain Demo
+            CrossL2Prover Bridge
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
-            Experience real-time cross-chain interoperability with live transaction tracking, 
-            network monitoring, and seamless multi-chain connectivity across Sepolia testnets.
+            Experience real cross-chain transfers using CrossL2Prover on Sepolia testnets with 
+            cryptographic proof generation, live transaction tracking, and block explorer verification.
           </p>
+          
+          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
+            <div className="inline-flex items-center space-x-2 bg-blue-500/10 border border-blue-500/20 rounded-full px-4 py-2">
+              <Network className="h-4 w-4 text-blue-400" />
+              <span className="text-blue-400 text-sm font-medium">CrossL2Prover: {CROSSL2_PROVER_ADDRESS.slice(0, 10)}...</span>
+            </div>
+            
+            {DEMO_MODE && (
+              <div className="inline-flex items-center space-x-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full px-4 py-2">
+                <AlertCircle className="h-4 w-4 text-yellow-400" />
+                <span className="text-yellow-400 text-sm font-medium">Demo Mode - Simulated Proofs</span>
+              </div>
+            )}
+          </div>
           
           {isConnected && chain && (
             <div className="inline-flex items-center space-x-2 bg-green-500/10 border border-green-500/20 rounded-full px-4 py-2">
@@ -143,19 +307,19 @@ const InteropDemo: React.FC = () => {
             <div className="text-2xl font-bold text-white mb-1">
               {realTimeStats.totalTransactions.toLocaleString()}
             </div>
-            <div className="text-gray-400 text-sm">Total Transactions</div>
+            <div className="text-gray-400 text-sm">Total Proofs</div>
           </div>
           <div className="glass-effect rounded-xl p-4 text-center">
             <div className="text-2xl font-bold text-white mb-1">
               {realTimeStats.activeChains}
             </div>
-            <div className="text-gray-400 text-sm">Active Chains</div>
+            <div className="text-gray-400 text-sm">Supported Chains</div>
           </div>
           <div className="glass-effect rounded-xl p-4 text-center">
             <div className="text-2xl font-bold text-white mb-1">
               {realTimeStats.avgConfirmTime.toFixed(1)}s
             </div>
-            <div className="text-gray-400 text-sm">Avg Confirm Time</div>
+            <div className="text-gray-400 text-sm">Avg Proof Time</div>
           </div>
           <div className="glass-effect rounded-xl p-4 text-center">
             <div className="text-2xl font-bold text-white mb-1">
@@ -166,183 +330,433 @@ const InteropDemo: React.FC = () => {
         </div>
         
         <div className="max-w-4xl mx-auto">
-          {/* Chain Network Visualization */}
+          {/* Transfer Interface */}
           <div className="glass-effect rounded-2xl p-8 mb-8">
-            <h3 className="text-2xl font-bold text-white mb-6 text-center">Supported Sepolia Testnet Chains</h3>
-            <div className="flex flex-wrap justify-center gap-6 mb-8">
-              {chains.map((chain, index) => (
-                <div key={index} className="flex flex-col items-center space-y-2">
-                  <div className={`w-16 h-16 rounded-full ${chain.color} flex items-center justify-center text-2xl shadow-lg`}>
-                    {chain.logo}
+            <h3 className="text-2xl font-bold text-white mb-6 text-center">CrossL2Prover Transfer</h3>
+            
+            {!isConnected ? (
+              <div className="text-center py-12">
+                <Wallet className="h-16 w-16 text-gray-400 mx-auto mb-4" />
+                <h3 className="text-xl font-semibold text-white mb-2">Connect Your Wallet</h3>
+                <p className="text-gray-300 mb-6">
+                  Connect your wallet to start making real cross-chain transfers using CrossL2Prover
+                </p>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                {/* Network Status */}
+                {chain && (
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <div className="text-sm text-gray-400">Connected Network</div>
+                        <div className="text-white font-medium">{chain.name}</div>
+                        {balance && (
+                          <div className="text-sm text-gray-400">
+                            Balance: {parseFloat(balance.formatted).toFixed(4)} {balance.symbol}
+                          </div>
+                        )}
+                      </div>
+                      <div className={`w-3 h-3 rounded-full ${isCorrectNetwork() ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
+                    </div>
+                    {!isCorrectNetwork() && (
+                      <button
+                        onClick={() => handleSwitchNetwork(fromChain)}
+                        className="mt-2 text-sm text-blue-400 hover:text-blue-300"
+                      >
+                        Switch to {chains.find(c => c.key === fromChain)?.name}
+                      </button>
+                    )}
                   </div>
-                  <span className="text-white font-medium text-sm text-center">{chain.name}</span>
-                  <div className="flex space-x-1">
-                    {Array.from({ length: 3 }).map((_, i) => (
-                      <div key={i} className="w-1 h-1 bg-green-400 rounded-full animate-pulse" 
-                           style={{ animationDelay: `${i * 0.2}s` }}></div>
+                )}
+
+                {/* Chain Support Status */}
+                <div className="bg-white/5 rounded-lg p-4">
+                  <div className="text-sm text-gray-400 mb-2">Chain Support Status</div>
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {chains.map((chain) => (
+                      <div key={chain.key} className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${
+                          chainSupport[chain.key] ? 'bg-green-400' : 'bg-red-400'
+                        }`}></div>
+                        <span className="text-xs text-gray-300">{chain.name.split(' ')[0]}</span>
+                      </div>
                     ))}
                   </div>
                 </div>
-              ))}
-            </div>
-            
-            {/* Connection Lines */}
-            <div className="relative">
-              <svg className="w-full h-20" viewBox="0 0 400 80">
-                <defs>
-                  <linearGradient id="connectionGradient" x1="0%" y1="0%" x2="100%" y2="0%">
-                    <stop offset="0%" stopColor="#3B82F6" stopOpacity="0.6" />
-                    <stop offset="50%" stopColor="#8B5CF6" stopOpacity="0.8" />
-                    <stop offset="100%" stopColor="#EC4899" stopOpacity="0.6" />
-                  </linearGradient>
-                </defs>
-                {Array.from({ length: 3 }).map((_, i) => (
-                  <line
-                    key={i}
-                    x1={50 + i * 100}
-                    y1="40"
-                    x2={150 + i * 100}
-                    y2="40"
-                    stroke="url(#connectionGradient)"
-                    strokeWidth="2"
-                    className="animate-pulse"
-                    style={{ animationDelay: `${i * 0.3}s` }}
-                  />
-                ))}
-              </svg>
-            </div>
-            
-            <div className="text-center">
-              <button
-                onClick={simulateAdvancedTransaction}
-                disabled={isProcessing}
-                className="bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white px-8 py-4 rounded-lg font-semibold transition-all duration-300 transform hover:scale-105 flex items-center space-x-2 mx-auto"
-              >
-                <Zap className="h-5 w-5" />
-                <span>{isProcessing ? 'Processing Cross-Chain Transfer...' : 'Simulate Live Cross-Chain Transfer'}</span>
-              </button>
-            </div>
+
+                {/* From Chain */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">From</label>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <select
+                        value={fromChain}
+                        onChange={(e) => setFromChain(e.target.value)}
+                        className="bg-transparent text-white text-lg font-semibold focus:outline-none"
+                      >
+                        {chains.map(chain => (
+                          <option key={chain.key} value={chain.key} className="bg-gray-800">
+                            {chain.name} {!chainSupport[chain.key] ? '(Unsupported)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="text-right">
+                        <div className="text-gray-400 text-sm">Balance</div>
+                        <div className="text-white font-medium">
+                          {balance ? `${parseFloat(balance.formatted).toFixed(4)} ${balance.symbol}` : '0.0000'}
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <input
+                      type="number"
+                      placeholder="0.0"
+                      value={amount}
+                      onChange={(e) => setAmount(e.target.value)}
+                      className="w-full bg-transparent text-2xl text-white placeholder-gray-400 focus:outline-none"
+                      step="0.001"
+                      min={minAmount}
+                    />
+                    
+                    <div className="flex justify-between items-center mt-2">
+                      <div className="text-xs text-gray-400">
+                        Min: {minAmount} ETH (from contract)
+                      </div>
+                      {balance && (
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => setAmount((parseFloat(balance.formatted) * 0.25).toFixed(4))}
+                            className="text-xs text-blue-400 hover:text-blue-300"
+                          >
+                            25%
+                          </button>
+                          <button
+                            onClick={() => setAmount((parseFloat(balance.formatted) * 0.5).toFixed(4))}
+                            className="text-xs text-blue-400 hover:text-blue-300"
+                          >
+                            50%
+                          </button>
+                          <button
+                            onClick={() => setAmount((parseFloat(balance.formatted) * 0.9).toFixed(4))}
+                            className="text-xs text-blue-400 hover:text-blue-300"
+                          >
+                            Max
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Swap Button */}
+                <div className="flex justify-center">
+                  <button
+                    onClick={handleSwapChains}
+                    className="bg-white/10 hover:bg-white/20 p-3 rounded-full transition-colors"
+                    disabled={isTransferring}
+                  >
+                    <ArrowRight className="h-6 w-6 text-white" />
+                  </button>
+                </div>
+
+                {/* To Chain */}
+                <div>
+                  <label className="block text-sm font-medium text-gray-300 mb-2">To</label>
+                  <div className="bg-white/5 rounded-lg p-4">
+                    <div className="flex items-center justify-between mb-4">
+                      <select
+                        value={toChain}
+                        onChange={(e) => setToChain(e.target.value)}
+                        className="bg-transparent text-white text-lg font-semibold focus:outline-none"
+                      >
+                        {chains.map(chain => (
+                          <option key={chain.key} value={chain.key} className="bg-gray-800">
+                            {chain.name} {!chainSupport[chain.key] ? '(Unsupported)' : ''}
+                          </option>
+                        ))}
+                      </select>
+                      <div className="text-right">
+                        <div className="text-gray-400 text-sm">You'll receive</div>
+                        <div className="text-white font-medium">
+                          {amount || '0.0'} ETH
+                        </div>
+                      </div>
+                    </div>
+                    
+                    <div className="text-2xl text-gray-400">
+                      {amount || '0.0'}
+                    </div>
+                  </div>
+                </div>
+
+                {/* Transfer Details */}
+                {amount && parseFloat(amount) > 0 && (
+                  <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-4">
+                    <div className="flex items-start space-x-3">
+                      <AlertCircle className="h-5 w-5 text-blue-400 mt-0.5" />
+                      <div className="flex-1">
+                        <h4 className="text-blue-400 font-medium mb-1">CrossL2Prover Transfer Details</h4>
+                        <div className="text-sm text-gray-300 space-y-1">
+                          <div className="flex justify-between">
+                            <span>Proof generation:</span>
+                            <span>~2-5 minutes</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Cross-chain execution:</span>
+                            <span>~5-30 minutes</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Gas fee (estimated):</span>
+                            <span>{parseFloat(gasCosts.gasCost).toFixed(4)} ETH</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Total cost:</span>
+                            <span>{parseFloat(gasCosts.totalCost).toFixed(4)} ETH</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Route:</span>
+                            <span>{chains.find(c => c.key === fromChain)?.name} → {chains.find(c => c.key === toChain)?.name}</span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Transfer Button */}
+                <button
+                  onClick={executeRealTransfer}
+                  disabled={
+                    !amount || 
+                    parseFloat(amount) <= 0 ||
+                    isTransferring || 
+                    fromChain === toChain ||
+                    !isCorrectNetwork() ||
+                    parseFloat(amount) < parseFloat(minAmount) ||
+                    !chainSupport[fromChain] ||
+                    !chainSupport[toChain]
+                  }
+                  className="w-full bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-lg font-semibold transition-all duration-300"
+                >
+                  {isTransferring ? 'Processing CrossL2Prover Transfer...' : 
+                   fromChain === toChain ? 'Select different chains' :
+                   !isCorrectNetwork() ? `Switch to ${chains.find(c => c.key === fromChain)?.name}` :
+                   !chainSupport[fromChain] || !chainSupport[toChain] ? 'Chain not supported' :
+                   !amount || parseFloat(amount) <= 0 ? 'Enter amount' :
+                   parseFloat(amount) < parseFloat(minAmount) ? 
+                   `Minimum ${minAmount} ETH` :
+                   'Initiate CrossL2Prover Transfer'}
+                </button>
+              </div>
+            )}
           </div>
           
-          {/* Live Transaction Feed */}
+          {/* Transaction History */}
           {transactions.length > 0 && (
-            <div className="glass-effect rounded-2xl p-8">
+            <div className="glass-effect rounded-2xl p-8 mb-8">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-white">Live Transaction Feed</h3>
+                <h3 className="text-2xl font-bold text-white">Your CrossL2Prover Transfers</h3>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
-                  <span className="text-green-400 text-sm">Live</span>
+                  <span className="text-green-400 text-sm">Live Updates</span>
                 </div>
               </div>
               
               <div className="space-y-4">
-                {transactions.map((tx) => {
-                  const fromChain = getChainInfo(tx.from)
-                  const toChain = getChainInfo(tx.to)
-                  
-                  return (
-                    <div key={tx.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
-                      <div className="flex items-center justify-between mb-3">
-                        <div className="flex items-center space-x-4">
-                          {getStatusIcon(tx.status)}
-                          <div>
-                            <div className="text-white font-medium flex items-center space-x-2">
-                              <span>{tx.amount} ETH</span>
-                              <ArrowRight className="h-4 w-4 text-gray-400" />
-                              <span className="text-gray-300">{tx.from} → {tx.to}</span>
-                            </div>
-                            <div className="text-gray-400 text-sm flex items-center space-x-4">
-                              <span>{tx.timestamp.toLocaleTimeString()}</span>
-                              {tx.status === 'pending' && (
-                                <span>Confirmations: {tx.blockConfirmations}/12</span>
-                              )}
-                            </div>
+                {transactions.map((tx) => (
+                  <div key={tx.id} className="bg-white/5 rounded-lg p-4 border border-white/10">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-4">
+                        {getStatusIcon(tx.status)}
+                        <div>
+                          <div className="text-white font-medium flex items-center space-x-2">
+                            <span>{tx.amount} ETH</span>
+                            <ArrowRight className="h-4 w-4 text-gray-400" />
+                            <span className="text-gray-300">{tx.fromChain} → {tx.toChain}</span>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <div className={`text-sm font-medium ${
-                            tx.status === 'completed' ? 'text-green-400' :
-                            tx.status === 'pending' ? 'text-yellow-400' : 'text-red-400'
-                          }`}>
-                            {tx.status.toUpperCase()}
+                          <div className="text-gray-400 text-sm flex items-center space-x-4">
+                            <span>{tx.timestamp.toLocaleTimeString()}</span>
+                            {tx.actualTime && (
+                              <span>Completed in {Math.floor(tx.actualTime / 60)}m {tx.actualTime % 60}s</span>
+                            )}
+                            {tx.gasCost && (
+                              <span>Gas: {parseFloat(tx.gasCost).toFixed(4)} ETH</span>
+                            )}
                           </div>
-                          <div className="text-gray-400 text-xs">#{tx.id}</div>
                         </div>
                       </div>
-                      
-                      {/* Transaction Hash */}
-                      <div className="flex items-center justify-between bg-black/20 rounded p-2 mb-3">
-                        <div className="flex items-center space-x-2">
-                          <span className="text-xs text-gray-400">TX Hash:</span>
-                          <code className="text-xs text-blue-400 font-mono">
-                            {tx.txHash.slice(0, 10)}...{tx.txHash.slice(-8)}
-                          </code>
+                      <div className="text-right">
+                        <div className={`text-sm font-medium ${getStatusColor(tx.status)}`}>
+                          {tx.status.toUpperCase()}
                         </div>
-                        <button
-                          onClick={() => {
-                            if (fromChain) {
-                              window.open(`${fromChain.explorer}/tx/${tx.txHash}`, '_blank')
-                            }
-                          }}
-                          className="text-blue-400 hover:text-blue-300 p-1"
-                        >
-                          <ExternalLink className="h-3 w-3" />
-                        </button>
+                        <div className="text-gray-400 text-xs">#{tx.id}</div>
                       </div>
-                      
-                      {/* Progress Bar for Pending Transactions */}
-                      {tx.status === 'pending' && (
-                        <div className="space-y-2">
-                          <div className="flex justify-between text-xs text-gray-400">
-                            <span>Processing...</span>
-                            <span>~{Math.floor(tx.estimatedTime / 60)}m {tx.estimatedTime % 60}s remaining</span>
+                    </div>
+                    
+                    {/* Status Description */}
+                    <div className="mb-3">
+                      <div className="text-xs text-gray-400">{getStatusDescription(tx.status)}</div>
+                    </div>
+                    
+                    {/* Transaction Hashes */}
+                    <div className="space-y-2">
+                      {tx.txHash && (
+                        <div className="flex items-center justify-between bg-black/20 rounded p-2">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-xs text-gray-400">Source TX:</span>
+                            <code className="text-xs text-blue-400 font-mono">
+                              {tx.txHash.slice(0, 10)}...{tx.txHash.slice(-8)}
+                            </code>
                           </div>
-                          <div className="w-full bg-gray-700 rounded-full h-2">
-                            <div 
-                              className="bg-gradient-to-r from-blue-400 to-purple-400 h-2 rounded-full transition-all duration-1000"
-                              style={{ width: `${Math.min((tx.blockConfirmations / 12) * 100, 90)}%` }}
-                            ></div>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => copyToClipboard(tx.txHash!)}
+                              className="text-gray-400 hover:text-white p-1"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                const url = realBridgeService.getExplorerUrl(tx, 'source')
+                                if (url) window.open(url, '_blank')
+                              }}
+                              className="text-blue-400 hover:text-blue-300 p-1"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </button>
                           </div>
                         </div>
                       )}
                       
-                      {/* Success Animation */}
-                      {tx.status === 'completed' && (
-                        <div className="flex items-center space-x-2 text-green-400 text-sm">
-                          <CheckCircle className="h-4 w-4" />
-                          <span>Transfer completed successfully</span>
+                      {tx.proofId && (
+                        <div className="flex items-center justify-between bg-black/20 rounded p-2">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-xs text-gray-400">Proof ID:</span>
+                            <code className="text-xs text-purple-400 font-mono">
+                              {tx.proofId.slice(0, 10)}...{tx.proofId.slice(-8)}
+                            </code>
+                          </div>
+                          <button
+                            onClick={() => copyToClipboard(tx.proofId!)}
+                            className="text-gray-400 hover:text-white p-1"
+                          >
+                            <Copy className="h-3 w-3" />
+                          </button>
+                        </div>
+                      )}
+                      
+                      {tx.claimTxHash && (
+                        <div className="flex items-center justify-between bg-black/20 rounded p-2">
+                          <div className="flex items-center space-x-2">
+                            <span className="text-xs text-gray-400">Claim TX:</span>
+                            <code className="text-xs text-green-400 font-mono">
+                              {tx.claimTxHash.slice(0, 10)}...{tx.claimTxHash.slice(-8)}
+                            </code>
+                          </div>
+                          <div className="flex space-x-2">
+                            <button
+                              onClick={() => copyToClipboard(tx.claimTxHash!)}
+                              className="text-gray-400 hover:text-white p-1"
+                            >
+                              <Copy className="h-3 w-3" />
+                            </button>
+                            <button
+                              onClick={() => {
+                                const url = realBridgeService.getExplorerUrl(tx, 'destination')
+                                if (url) window.open(url, '_blank')
+                              }}
+                              className="text-green-400 hover:text-green-300 p-1"
+                            >
+                              <ExternalLink className="h-3 w-3" />
+                            </button>
+                          </div>
                         </div>
                       )}
                     </div>
-                  )
-                })}
+                    
+                    {/* Progress Bar for Active Transactions */}
+                    {(tx.status === 'pending' || tx.status === 'confirmed' || tx.status === 'proving' || tx.status === 'bridging') && (
+                      <div className="mt-3">
+                        <div className="flex justify-between text-xs text-gray-400 mb-1">
+                          <span>
+                            {tx.status === 'pending' ? 'Confirming transaction...' :
+                             tx.status === 'confirmed' ? 'Generating proof...' :
+                             tx.status === 'proving' ? 'Proof ready, executing...' : 'Finalizing transfer...'}
+                          </span>
+                          <span>~{Math.floor(tx.estimatedTime / 60)}m {tx.estimatedTime % 60}s estimated</span>
+                        </div>
+                        <div className="w-full bg-gray-700 rounded-full h-2">
+                          <div 
+                            className={`h-2 rounded-full transition-all duration-1000 ${
+                              tx.status === 'pending' ? 'bg-yellow-400 w-1/5' :
+                              tx.status === 'confirmed' ? 'bg-blue-400 w-2/5' :
+                              tx.status === 'proving' ? 'bg-purple-400 w-3/5' :
+                              'bg-indigo-400 w-4/5'
+                            }`}
+                          ></div>
+                        </div>
+                      </div>
+                    )}
+                    
+                    {/* Success Animation */}
+                    {tx.status === 'completed' && (
+                      <div className="flex items-center space-x-2 text-green-400 text-sm mt-3">
+                        <CheckCircle className="h-4 w-4" />
+                        <span>CrossL2Prover transfer completed successfully</span>
+                      </div>
+                    )}
+                  </div>
+                ))}
               </div>
             </div>
           )}
 
+          {/* Testnet Faucets */}
+          <div className="glass-effect rounded-xl p-6 mb-8">
+            <h3 className="text-lg font-semibold text-white mb-3">Need Sepolia Testnet Tokens?</h3>
+            <p className="text-gray-300 text-sm mb-4">
+              Get free Sepolia testnet tokens from these faucets to test CrossL2Prover transfers:
+            </p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {chains.map((chain) => (
+                <a 
+                  key={chain.key}
+                  href={chain.faucet} 
+                  target="_blank" 
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 bg-white/5 rounded-lg hover:bg-white/10 transition-colors"
+                >
+                  <span className="text-white text-sm">{chain.name} Faucet</span>
+                  <ExternalLink className="h-4 w-4 text-blue-400" />
+                </a>
+              ))}
+            </div>
+          </div>
+
           {/* Feature Highlights */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="glass-effect rounded-xl p-6 text-center">
-              <Zap className="h-12 w-12 text-yellow-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Lightning Fast</h3>
+              <Activity className="h-12 w-12 text-purple-400 mx-auto mb-4" />
+              <h3 className="text-lg font-semibold text-white mb-2">Cryptographic Proofs</h3>
               <p className="text-gray-300 text-sm">
-                Sub-minute cross-chain transfers with real-time confirmation tracking
+                Real cryptographic proof generation and verification using CrossL2Prover
               </p>
             </div>
             
             <div className="glass-effect rounded-xl p-6 text-center">
               <Network className="h-12 w-12 text-blue-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Multi-Chain Native</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Live Tracking</h3>
               <p className="text-gray-300 text-sm">
-                Seamlessly connect and transfer between all major Sepolia testnet chains
+                Real-time proof status monitoring with block explorer verification
               </p>
             </div>
             
             <div className="glass-effect rounded-xl p-6 text-center">
               <Shield className="h-12 w-12 text-green-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Secure & Audited</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Testnet Safe</h3>
               <p className="text-gray-300 text-sm">
-                Battle-tested smart contracts with comprehensive security audits
+                Safe testing environment with real contract interactions on testnets
               </p>
             </div>
           </div>
