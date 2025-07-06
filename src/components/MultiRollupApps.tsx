@@ -39,10 +39,10 @@ const MultiRollupApps: React.FC = () => {
 
   const availableChains = [
     'Ethereum Sepolia',
-    'Polygon Mumbai', 
-    'Optimism Goerli',
-    'Arbitrum Goerli',
-    'Base Goerli'
+    'Polygon Amoy', 
+    'Optimism Sepolia',
+    'Arbitrum Sepolia',
+    'Base Sepolia'
   ]
 
   const appTemplates = [
@@ -51,7 +51,7 @@ const MultiRollupApps: React.FC = () => {
       name: 'DeFi Aggregator',
       description: 'Cross-chain yield farming and liquidity aggregation',
       icon: Database,
-      chains: ['Ethereum Sepolia', 'Polygon Mumbai', 'Optimism Goerli'],
+      chains: ['Ethereum Sepolia', 'Polygon Amoy', 'Optimism Sepolia'],
       features: ['Yield Optimization', 'Cross-chain Swaps', 'Liquidity Mining']
     },
     {
@@ -59,7 +59,7 @@ const MultiRollupApps: React.FC = () => {
       name: 'NFT Marketplace',
       description: 'Multi-chain NFT trading and bridging platform',
       icon: Globe,
-      chains: ['Ethereum Sepolia', 'Polygon Mumbai', 'Base Goerli'],
+      chains: ['Ethereum Sepolia', 'Polygon Amoy', 'Base Sepolia'],
       features: ['Cross-chain NFTs', 'Unified Marketplace', 'Royalty Distribution']
     },
     {
@@ -67,7 +67,7 @@ const MultiRollupApps: React.FC = () => {
       name: 'Gaming Platform',
       description: 'Cross-chain gaming with unified asset management',
       icon: Zap,
-      chains: ['Polygon Mumbai', 'Arbitrum Goerli', 'Base Goerli'],
+      chains: ['Polygon Amoy', 'Arbitrum Sepolia', 'Base Sepolia'],
       features: ['Asset Bridging', 'Leaderboards', 'Reward Distribution']
     },
     {
@@ -75,7 +75,7 @@ const MultiRollupApps: React.FC = () => {
       name: 'DAO Governance',
       description: 'Multi-chain governance and proposal execution',
       icon: Shield,
-      chains: ['Ethereum Sepolia', 'Optimism Goerli', 'Arbitrum Goerli'],
+      chains: ['Ethereum Sepolia', 'Optimism Sepolia', 'Arbitrum Sepolia'],
       features: ['Cross-chain Voting', 'Proposal Execution', 'Treasury Management']
     }
   ]
@@ -92,7 +92,7 @@ const MultiRollupApps: React.FC = () => {
         id: '1',
         name: 'CrossDeFi Protocol',
         description: 'Multi-chain yield farming aggregator',
-        chains: ['Ethereum Sepolia', 'Polygon Mumbai', 'Optimism Goerli'],
+        chains: ['Ethereum Sepolia', 'Polygon Amoy', 'Optimism Sepolia'],
         status: 'active',
         transactions: 15420,
         tvl: 2.4
@@ -101,7 +101,7 @@ const MultiRollupApps: React.FC = () => {
         id: '2', 
         name: 'Universal NFT Hub',
         description: 'Cross-chain NFT marketplace and bridge',
-        chains: ['Ethereum Sepolia', 'Base Goerli'],
+        chains: ['Ethereum Sepolia', 'Base Sepolia'],
         status: 'active',
         transactions: 8930,
         tvl: 1.2
@@ -110,7 +110,7 @@ const MultiRollupApps: React.FC = () => {
         id: '3',
         name: 'GameFi Universe',
         description: 'Multi-rollup gaming ecosystem',
-        chains: ['Polygon Mumbai', 'Arbitrum Goerli'],
+        chains: ['Polygon Amoy', 'Arbitrum Sepolia'],
         status: 'deploying',
         transactions: 0,
         tvl: 0
@@ -125,8 +125,8 @@ const MultiRollupApps: React.FC = () => {
       {
         id: 'batch-1',
         intents: [
-          { type: 'swap', fromChain: 'Ethereum Sepolia', toChain: 'Polygon Mumbai', amount: '100' },
-          { type: 'stake', chain: 'Optimism Goerli', amount: '50' }
+          { type: 'swap', fromChain: 'Ethereum Sepolia', toChain: 'Polygon Amoy', amount: '100' },
+          { type: 'stake', chain: 'Optimism Sepolia', amount: '50' }
         ],
         status: 'processing',
         timestamp: new Date(Date.now() - 300000),
@@ -135,7 +135,7 @@ const MultiRollupApps: React.FC = () => {
       {
         id: 'batch-2',
         intents: [
-          { type: 'bridge', fromChain: 'Base Goerli', toChain: 'Arbitrum Goerli', amount: '25' }
+          { type: 'bridge', fromChain: 'Base Sepolia', toChain: 'Arbitrum Sepolia', amount: '25' }
         ],
         status: 'completed',
         timestamp: new Date(Date.now() - 600000),
@@ -208,13 +208,13 @@ const MultiRollupApps: React.FC = () => {
         {
           type: 'cross_chain_swap',
           fromChain: 'Ethereum Sepolia',
-          toChain: 'Polygon Mumbai',
+          toChain: 'Polygon Amoy',
           amount: '10',
           token: 'ETH'
         },
         {
           type: 'liquidity_provision',
-          chain: 'Optimism Goerli',
+          chain: 'Optimism Sepolia',
           amount: '5',
           pool: 'ETH/USDC'
         }

@@ -10,6 +10,30 @@ import { publicProvider } from 'wagmi/providers/public'
 import { infuraProvider } from 'wagmi/providers/infura'
 import { alchemyProvider } from 'wagmi/providers/alchemy'
 
+// Define Polygon Amoy chain manually since it might not be available in wagmi/chains
+const polygonAmoy = {
+  id: 80002,
+  name: 'Polygon Amoy',
+  network: 'polygon-amoy',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'MATIC',
+    symbol: 'MATIC',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://rpc-amoy.polygon.technology'],
+    },
+    public: {
+      http: ['https://rpc-amoy.polygon.technology'],
+    },
+  },
+  blockExplorers: {
+    default: { name: 'PolygonScan', url: 'https://amoy.polygonscan.com' },
+  },
+  testnet: true,
+}
+
 // Get API keys from environment
 const infuraApiKey = import.meta.env.VITE_INFURA_API_KEY
 const alchemyApiKey = import.meta.env.VITE_ALCHEMY_API_KEY
@@ -40,9 +64,9 @@ if (isValidApiKey(infuraApiKey)) {
 // Always add public provider as fallback
 providers.push(publicProvider())
 
-// Using only Sepolia testnet chains for safe testing
+// Using Sepolia testnet chains and Polygon Amoy for safe testing
 const { chains, publicClient } = configureChains(
-  [sepolia, optimismSepolia, arbitrumSepolia, baseSepolia],
+  [sepolia, polygonAmoy, optimismSepolia, arbitrumSepolia, baseSepolia],
   providers
 )
 

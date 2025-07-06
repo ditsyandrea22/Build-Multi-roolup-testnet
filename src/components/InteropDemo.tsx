@@ -244,10 +244,10 @@ const InteropDemo: React.FC = () => {
   const getStatusDescription = (status: RealBridgeTransaction['status']) => {
     switch (status) {
       case 'pending': return 'Transaction pending confirmation'
-      case 'confirmed': return 'Transaction confirmed, generating proof'
-      case 'proving': return 'Proof generated, waiting for execution'
-      case 'bridging': return 'Executing cross-chain transfer'
-      case 'completed': return 'Transfer completed successfully'
+      case 'confirmed': return 'Transaction confirmed, generating IBC proof'
+      case 'proving': return 'IBC proof generated, waiting for execution'
+      case 'bridging': return 'Executing cross-chain IBC transfer'
+      case 'completed': return 'IBC transfer completed successfully'
       case 'failed': return 'Transfer failed'
       default: return 'Unknown status'
     }
@@ -276,7 +276,7 @@ const InteropDemo: React.FC = () => {
           </h2>
           <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-8">
             Experience real cross-chain transfers using CrossL2Prover on Sepolia testnets with 
-            cryptographic proof generation, live transaction tracking, and block explorer verification.
+            IBC protocol, cryptographic proof generation, live transaction tracking, and block explorer verification.
           </p>
           
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-8">
@@ -285,10 +285,20 @@ const InteropDemo: React.FC = () => {
               <span className="text-blue-400 text-sm font-medium">CrossL2Prover: {CROSSL2_PROVER_ADDRESS.slice(0, 10)}...</span>
             </div>
             
+            <a
+              href="https://dashboard.polymerlabs.org/"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="inline-flex items-center space-x-2 bg-purple-500/10 border border-purple-500/20 rounded-full px-4 py-2 text-purple-400 hover:text-purple-300 transition-colors"
+            >
+              <span className="text-sm font-medium">Polymer Dashboard</span>
+              <ExternalLink className="h-3 w-3" />
+            </a>
+            
             {DEMO_MODE && (
               <div className="inline-flex items-center space-x-2 bg-yellow-500/10 border border-yellow-500/20 rounded-full px-4 py-2">
                 <AlertCircle className="h-4 w-4 text-yellow-400" />
-                <span className="text-yellow-400 text-sm font-medium">Demo Mode - Simulated Proofs</span>
+                <span className="text-yellow-400 text-sm font-medium">Demo Mode - Simulated IBC Proofs</span>
               </div>
             )}
           </div>
@@ -304,42 +314,49 @@ const InteropDemo: React.FC = () => {
         {/* Real-time Stats */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-12">
           <div className="glass-effect rounded-xl p-4 text-center">
+            <div className="flex items-center justify-center mb-2">
+              <Activity className="h-5 w-5 text-blue-400 mr-2" />
+              <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
+            </div>
             <div className="text-2xl font-bold text-white mb-1">
               {realTimeStats.totalTransactions.toLocaleString()}
             </div>
-            <div className="text-gray-400 text-sm">Total Proofs</div>
+            <div className="text-gray-400 text-xs">IBC Proofs Generated</div>
           </div>
           <div className="glass-effect rounded-xl p-4 text-center">
+            <Network className="h-6 w-6 text-purple-400 mx-auto mb-2" />
             <div className="text-2xl font-bold text-white mb-1">
               {realTimeStats.activeChains}
             </div>
-            <div className="text-gray-400 text-sm">Supported Chains</div>
+            <div className="text-gray-400 text-xs">Connected Chains</div>
           </div>
           <div className="glass-effect rounded-xl p-4 text-center">
+            <Zap className="h-6 w-6 text-yellow-400 mx-auto mb-2" />
             <div className="text-2xl font-bold text-white mb-1">
               {realTimeStats.avgConfirmTime.toFixed(1)}s
             </div>
-            <div className="text-gray-400 text-sm">Avg Proof Time</div>
+            <div className="text-gray-400 text-xs">Avg IBC Proof Time</div>
           </div>
           <div className="glass-effect rounded-xl p-4 text-center">
+            <Shield className="h-6 w-6 text-green-400 mx-auto mb-2" />
             <div className="text-2xl font-bold text-white mb-1">
               ${realTimeStats.totalVolume.toFixed(1)}M
             </div>
-            <div className="text-gray-400 text-sm">24h Volume</div>
+            <div className="text-gray-400 text-xs">24h Volume</div>
           </div>
         </div>
         
         <div className="max-w-4xl mx-auto">
           {/* Transfer Interface */}
           <div className="glass-effect rounded-2xl p-8 mb-8">
-            <h3 className="text-2xl font-bold text-white mb-6 text-center">CrossL2Prover Transfer</h3>
+            <h3 className="text-2xl font-bold text-white mb-6 text-center">CrossL2Prover IBC Transfer</h3>
             
             {!isConnected ? (
               <div className="text-center py-12">
                 <Wallet className="h-16 w-16 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-xl font-semibold text-white mb-2">Connect Your Wallet</h3>
                 <p className="text-gray-300 mb-6">
-                  Connect your wallet to start making real cross-chain transfers using CrossL2Prover
+                  Connect your wallet to start making real cross-chain transfers using CrossL2Prover and IBC protocol
                 </p>
               </div>
             ) : (
@@ -372,7 +389,7 @@ const InteropDemo: React.FC = () => {
 
                 {/* Chain Support Status */}
                 <div className="bg-white/5 rounded-lg p-4">
-                  <div className="text-sm text-gray-400 mb-2">Chain Support Status</div>
+                  <div className="text-sm text-gray-400 mb-2">IBC Chain Support Status</div>
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
                     {chains.map((chain) => (
                       <div key={chain.key} className="flex items-center space-x-2">
@@ -496,10 +513,10 @@ const InteropDemo: React.FC = () => {
                     <div className="flex items-start space-x-3">
                       <AlertCircle className="h-5 w-5 text-blue-400 mt-0.5" />
                       <div className="flex-1">
-                        <h4 className="text-blue-400 font-medium mb-1">CrossL2Prover Transfer Details</h4>
+                        <h4 className="text-blue-400 font-medium mb-1">CrossL2Prover IBC Transfer Details</h4>
                         <div className="text-sm text-gray-300 space-y-1">
                           <div className="flex justify-between">
-                            <span>Proof generation:</span>
+                            <span>IBC proof generation:</span>
                             <span>~2-5 minutes</span>
                           </div>
                           <div className="flex justify-between">
@@ -513,6 +530,10 @@ const InteropDemo: React.FC = () => {
                           <div className="flex justify-between">
                             <span>Total cost:</span>
                             <span>{parseFloat(gasCosts.totalCost).toFixed(4)} ETH</span>
+                          </div>
+                          <div className="flex justify-between">
+                            <span>Protocol:</span>
+                            <span>IBC via CrossL2Prover</span>
                           </div>
                           <div className="flex justify-between">
                             <span>Route:</span>
@@ -539,14 +560,14 @@ const InteropDemo: React.FC = () => {
                   }
                   className="w-full bg-gradient-to-r from-primary-600 to-secondary-600 hover:from-primary-700 hover:to-secondary-700 disabled:opacity-50 disabled:cursor-not-allowed text-white py-4 rounded-lg font-semibold transition-all duration-300"
                 >
-                  {isTransferring ? 'Processing CrossL2Prover Transfer...' : 
+                  {isTransferring ? 'Processing CrossL2Prover IBC Transfer...' : 
                    fromChain === toChain ? 'Select different chains' :
                    !isCorrectNetwork() ? `Switch to ${chains.find(c => c.key === fromChain)?.name}` :
                    !chainSupport[fromChain] || !chainSupport[toChain] ? 'Chain not supported' :
                    !amount || parseFloat(amount) <= 0 ? 'Enter amount' :
                    parseFloat(amount) < parseFloat(minAmount) ? 
                    `Minimum ${minAmount} ETH` :
-                   'Initiate CrossL2Prover Transfer'}
+                   'Initiate CrossL2Prover IBC Transfer'}
                 </button>
               </div>
             )}
@@ -556,7 +577,7 @@ const InteropDemo: React.FC = () => {
           {transactions.length > 0 && (
             <div className="glass-effect rounded-2xl p-8 mb-8">
               <div className="flex items-center justify-between mb-6">
-                <h3 className="text-2xl font-bold text-white">Your CrossL2Prover Transfers</h3>
+                <h3 className="text-2xl font-bold text-white">Your CrossL2Prover IBC Transfers</h3>
                 <div className="flex items-center space-x-2">
                   <div className="w-2 h-2 bg-green-400 rounded-full animate-pulse"></div>
                   <span className="text-green-400 text-sm">Live Updates</span>
@@ -632,7 +653,7 @@ const InteropDemo: React.FC = () => {
                       {tx.proofId && (
                         <div className="flex items-center justify-between bg-black/20 rounded p-2">
                           <div className="flex items-center space-x-2">
-                            <span className="text-xs text-gray-400">Proof ID:</span>
+                            <span className="text-xs text-gray-400">IBC Proof ID:</span>
                             <code className="text-xs text-purple-400 font-mono">
                               {tx.proofId.slice(0, 10)}...{tx.proofId.slice(-8)}
                             </code>
@@ -681,8 +702,8 @@ const InteropDemo: React.FC = () => {
                         <div className="flex justify-between text-xs text-gray-400 mb-1">
                           <span>
                             {tx.status === 'pending' ? 'Confirming transaction...' :
-                             tx.status === 'confirmed' ? 'Generating proof...' :
-                             tx.status === 'proving' ? 'Proof ready, executing...' : 'Finalizing transfer...'}
+                             tx.status === 'confirmed' ? 'Generating IBC proof...' :
+                             tx.status === 'proving' ? 'IBC proof ready, executing...' : 'Finalizing IBC transfer...'}
                           </span>
                           <span>~{Math.floor(tx.estimatedTime / 60)}m {tx.estimatedTime % 60}s estimated</span>
                         </div>
@@ -703,7 +724,7 @@ const InteropDemo: React.FC = () => {
                     {tx.status === 'completed' && (
                       <div className="flex items-center space-x-2 text-green-400 text-sm mt-3">
                         <CheckCircle className="h-4 w-4" />
-                        <span>CrossL2Prover transfer completed successfully</span>
+                        <span>CrossL2Prover IBC transfer completed successfully</span>
                       </div>
                     )}
                   </div>
@@ -716,7 +737,7 @@ const InteropDemo: React.FC = () => {
           <div className="glass-effect rounded-xl p-6 mb-8">
             <h3 className="text-lg font-semibold text-white mb-3">Need Sepolia Testnet Tokens?</h3>
             <p className="text-gray-300 text-sm mb-4">
-              Get free Sepolia testnet tokens from these faucets to test CrossL2Prover transfers:
+              Get free Sepolia testnet tokens from these faucets to test CrossL2Prover IBC transfers:
             </p>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {chains.map((chain) => (
@@ -738,17 +759,17 @@ const InteropDemo: React.FC = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="glass-effect rounded-xl p-6 text-center">
               <Activity className="h-12 w-12 text-purple-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Cryptographic Proofs</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">IBC Cryptographic Proofs</h3>
               <p className="text-gray-300 text-sm">
-                Real cryptographic proof generation and verification using CrossL2Prover
+                Real IBC cryptographic proof generation and verification using CrossL2Prover
               </p>
             </div>
             
             <div className="glass-effect rounded-xl p-6 text-center">
               <Network className="h-12 w-12 text-blue-400 mx-auto mb-4" />
-              <h3 className="text-lg font-semibold text-white mb-2">Live Tracking</h3>
+              <h3 className="text-lg font-semibold text-white mb-2">Live IBC Tracking</h3>
               <p className="text-gray-300 text-sm">
-                Real-time proof status monitoring with block explorer verification
+                Real-time IBC proof status monitoring with block explorer verification
               </p>
             </div>
             
@@ -756,8 +777,81 @@ const InteropDemo: React.FC = () => {
               <Shield className="h-12 w-12 text-green-400 mx-auto mb-4" />
               <h3 className="text-lg font-semibold text-white mb-2">Testnet Safe</h3>
               <p className="text-gray-300 text-sm">
-                Safe testing environment with real contract interactions on testnets
+                Safe testing environment with real IBC contract interactions on testnets
               </p>
+            </div>
+          </div>
+
+          {/* IBC Protocol Information */}
+          <div className="glass-effect rounded-2xl p-8 mt-12">
+            <h3 className="text-2xl font-bold text-white mb-6 text-center">About IBC Protocol</h3>
+            <div className="max-w-4xl mx-auto">
+              <p className="text-lg text-gray-300 mb-6 text-center">
+                The Inter-Blockchain Communication (IBC) protocol enables secure and reliable communication 
+                between independent blockchains, powering the next generation of cross-chain applications.
+              </p>
+              
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-8">
+                <div>
+                  <h4 className="text-xl font-semibold text-white mb-3">🔗 Universal Standard</h4>
+                  <p className="text-gray-300">
+                    IBC is the gold standard for blockchain interoperability, enabling any blockchain to communicate with any other.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="text-xl font-semibold text-white mb-3">🛡️ Cryptographic Security</h4>
+                  <p className="text-gray-300">
+                    Built on light client proofs and cryptographic verification for maximum security without trusted intermediaries.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="text-xl font-semibold text-white mb-3">⚡ High Performance</h4>
+                  <p className="text-gray-300">
+                    Optimized for speed and efficiency with minimal overhead and maximum throughput.
+                  </p>
+                </div>
+                
+                <div>
+                  <h4 className="text-xl font-semibold text-white mb-3">🔧 Developer Friendly</h4>
+                  <p className="text-gray-300">
+                    Simple APIs and comprehensive tooling make IBC integration straightforward for developers.
+                  </p>
+                </div>
+              </div>
+              
+              <div className="flex flex-wrap justify-center gap-4">
+                <a
+                  href="https://github.com/open-ibc/ibc-app-solidity-template"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 bg-blue-500/10 border border-blue-500/20 rounded-lg px-4 py-2 text-blue-400 hover:text-blue-300 transition-colors"
+                >
+                  <span>IBC Solidity Template</span>
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+                
+                <a
+                  href="https://docs.polymerlabs.org/docs/learn/ibc"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 bg-purple-500/10 border border-purple-500/20 rounded-lg px-4 py-2 text-purple-400 hover:text-purple-300 transition-colors"
+                >
+                  <span>Learn IBC</span>
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+                
+                <a
+                  href="https://x.com/Polymer_Labs"
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center space-x-2 bg-green-500/10 border border-green-500/20 rounded-lg px-4 py-2 text-green-400 hover:text-green-300 transition-colors"
+                >
+                  <span>Follow Polymer Labs</span>
+                  <ExternalLink className="h-4 w-4" />
+                </a>
+              </div>
             </div>
           </div>
         </div>

@@ -13,6 +13,13 @@ export const POLYMER_CONFIG = {
       proverContract: '0x1234567890123456789012345678901234567890',
       polymerHub: '0x2345678901234567890123456789012345678901'
     },
+    POLYGON_AMOY: {
+      chainId: 80002,
+      name: 'Polygon Amoy',
+      rpcUrl: 'https://rpc-amoy.polygon.technology',
+      proverContract: '0x2345678901234567890123456789012345678901',
+      polymerHub: '0x3456789012345678901234567890123456789012'
+    },
     OPTIMISM_SEPOLIA: {
       chainId: 11155420,
       name: 'Optimism Sepolia',

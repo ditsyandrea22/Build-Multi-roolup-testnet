@@ -233,7 +233,7 @@ class PolymerApiService {
         return [
           {
             relayerId: 'demo-relayer-1',
-            chains: ['sepolia', 'polygonMumbai'],
+            chains: ['sepolia', 'polygonAmoy'],
             status: 'online',
             lastSeen: Date.now(),
             performance: {
@@ -244,7 +244,7 @@ class PolymerApiService {
           },
           {
             relayerId: 'demo-relayer-2',
-            chains: ['optimismGoerli', 'arbitrumGoerli'],
+            chains: ['optimismSepolia', 'arbitrumSepolia'],
             status: 'online',
             lastSeen: Date.now() - 30000,
             performance: {
@@ -270,7 +270,7 @@ class PolymerApiService {
       return [
         {
           relayerId: 'fallback-relayer',
-          chains: ['sepolia', 'polygonMumbai'],
+          chains: ['sepolia', 'polygonAmoy'],
           status: 'offline',
           lastSeen: Date.now() - 300000,
           performance: {

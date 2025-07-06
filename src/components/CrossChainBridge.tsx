@@ -4,6 +4,30 @@ import { useAccount, useBalance, useNetwork, useSwitchNetwork, useContractWrite,
 import { parseEther, formatEther } from 'viem'
 import { sepolia, optimismSepolia, arbitrumSepolia, baseSepolia } from 'wagmi/chains'
 
+// Define Polygon Amoy chain manually since it might not be available in wagmi/chains
+const polygonAmoy = {
+  id: 80002,
+  name: 'Polygon Amoy',
+  network: 'polygon-amoy',
+  nativeCurrency: {
+    decimals: 18,
+    name: 'MATIC',
+    symbol: 'MATIC',
+  },
+  rpcUrls: {
+    default: {
+      http: ['https://rpc-amoy.polygon.technology'],
+    },
+    public: {
+      http: ['https://rpc-amoy.polygon.technology'],
+    },
+  },
+  blockExplorers: {
+    default: { name: 'PolygonScan', url: 'https://amoy.polygonscan.com' },
+  },
+  testnet: true,
+}
+
 interface BridgeTransaction {
   id: string
   fromChain: string
@@ -22,7 +46,7 @@ const CrossChainBridge: React.FC = () => {
   const { data: balance } = useBalance({ address })
   
   const [fromChain, setFromChain] = useState('sepolia')
-  const [toChain, setToChain] = useState('optimismSepolia')
+  const [toChain, setToChain] = useState('polygonAmoy')
   const [amount, setAmount] = useState('')
   const [isTransferring, setIsTransferring] = useState(false)
   const [transactions, setTransactions] = useState<BridgeTransaction[]>([])
@@ -36,6 +60,14 @@ const CrossChainBridge: React.FC = () => {
       color: 'bg-blue-500',
       chainId: sepolia.id,
       explorer: 'https://sepolia.etherscan.io'
+    },
+    { 
+      id: 'polygonAmoy', 
+      name: 'Polygon Amoy', 
+      symbol: 'MATIC', 
+      color: 'bg-purple-500',
+      chainId: polygonAmoy.id,
+      explorer: 'https://amoy.polygonscan.com'
     },
     { 
       id: 'optimismSepolia', 
@@ -193,12 +225,12 @@ const CrossChainBridge: React.FC = () => {
             Cross-Chain Bridge
           </h1>
           <p className="text-xl text-gray-300 mb-4">
-            Transfer assets seamlessly across Sepolia testnet blockchain networks
+            Transfer assets seamlessly across testnet blockchain networks
           </p>
           <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4 mb-6">
             <div className="flex items-center justify-center space-x-2">
               <AlertTriangle className="h-5 w-5 text-yellow-400" />
-              <span className="text-yellow-400 font-medium">Sepolia Testnet Mode - Safe for Testing</span>
+              <span className="text-yellow-400 font-medium">Testnet Mode - Safe for Testing</span>
             </div>
           </div>
         </div>
@@ -209,7 +241,7 @@ const CrossChainBridge: React.FC = () => {
               <Wallet className="h-16 w-16 text-gray-400 mx-auto mb-4" />
               <h3 className="text-xl font-semibold text-white mb-2">Connect Your Wallet</h3>
               <p className="text-gray-300 mb-6">
-                Please connect your wallet to start bridging assets on Sepolia testnets
+                Please connect your wallet to start bridging assets on testnets
               </p>
             </div>
           ) : (
@@ -221,6 +253,11 @@ const CrossChainBridge: React.FC = () => {
                     <div>
                       <div className="text-sm text-gray-400">Connected Network</div>
                       <div className="text-white font-medium">{chain.name}</div>
+                      {balance && (
+                        <div className="text-sm text-gray-400">
+                          Balance: {parseFloat(balance.formatted).toFixed(4)} {balance.symbol}
+                        </div>
+                      )}
                     </div>
                     <div className={`w-3 h-3 rounded-full ${isCorrectNetwork() ? 'bg-green-400' : 'bg-yellow-400'}`}></div>
                   </div>
@@ -441,23 +478,23 @@ const CrossChainBridge: React.FC = () => {
         {/* Info Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-12">
           <div className="glass-effect rounded-xl p-6">
-            <h3 className="text-lg font-semibold text-white mb-3">Sepolia Testnet Safe</h3>
+            <h3 className="text-lg font-semibold text-white mb-3">Testnet Safe</h3>
             <p className="text-gray-300 text-sm">
-              All transactions use Sepolia testnet tokens with no real value. Perfect for testing and learning.
+              All transactions use testnet tokens with no real value. Perfect for testing and learning.
             </p>
           </div>
           
           <div className="glass-effect rounded-xl p-6">
             <h3 className="text-lg font-semibold text-white mb-3">Real Wallet Integration</h3>
             <p className="text-gray-300 text-sm">
-              Connect your actual wallet to experience real cross-chain interactions on safe Sepolia testnets.
+              Connect your actual wallet to experience real cross-chain interactions on safe testnets.
             </p>
           </div>
           
           <div className="glass-effect rounded-xl p-6">
             <h3 className="text-lg font-semibold text-white mb-3">Multi-Chain Support</h3>
             <p className="text-gray-300 text-sm">
-              Bridge between Ethereum Sepolia, Optimism Sepolia, Arbitrum Sepolia, and Base Sepolia testnets.
+              Bridge between Ethereum Sepolia, Polygon Amoy, Optimism Sepolia, Arbitrum Sepolia, and Base Sepolia testnets.
             </p>
           </div>
           
@@ -471,9 +508,9 @@ const CrossChainBridge: React.FC = () => {
 
         {/* Get Testnet Tokens */}
         <div className="glass-effect rounded-xl p-6 mt-8">
-          <h3 className="text-lg font-semibold text-white mb-3">Need Sepolia Testnet Tokens?</h3>
+          <h3 className="text-lg font-semibold text-white mb-3">Need Testnet Tokens?</h3>
           <p className="text-gray-300 text-sm mb-4">
-            Get free Sepolia testnet tokens from these faucets to test the bridge:
+            Get free testnet tokens from these faucets to test the bridge:
           </p>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <a 
@@ -483,6 +520,15 @@ const CrossChainBridge: React.FC = () => {
               className="flex items-center space-x-2 text-blue-400 hover:text-blue-300 text-sm"
             >
               <span>Ethereum Sepolia Faucet</span>
+              <ExternalLink className="h-3 w-3" />
+            </a>
+            <a 
+              href="https://faucet.polygon.technology/" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="flex items-center space-x-2 text-purple-400 hover:text-purple-300 text-sm"
+            >
+              <span>Polygon Amoy Faucet</span>
               <ExternalLink className="h-3 w-3" />
             </a>
             <a 

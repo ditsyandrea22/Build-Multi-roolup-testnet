@@ -42,7 +42,7 @@ const ChainAbstraction: React.FC = () => {
       name: 'Cross-Chain Swap',
       description: 'Swap tokens across multiple chains in a single transaction',
       icon: ArrowRight,
-      chains: ['Ethereum Sepolia', 'Polygon Mumbai'],
+      chains: ['Ethereum Sepolia', 'Polygon Amoy'],
       gasOptimization: 45
     },
     {
@@ -50,7 +50,7 @@ const ChainAbstraction: React.FC = () => {
       name: 'Universal Bridge',
       description: 'Bridge assets between any supported chains automatically',
       icon: Network,
-      chains: ['Ethereum Sepolia', 'Optimism Goerli', 'Arbitrum Goerli'],
+      chains: ['Ethereum Sepolia', 'Optimism Sepolia', 'Arbitrum Sepolia'],
       gasOptimization: 35
     },
     {
@@ -58,7 +58,7 @@ const ChainAbstraction: React.FC = () => {
       name: 'Multi-Chain Staking',
       description: 'Stake across multiple protocols and chains simultaneously',
       icon: Shield,
-      chains: ['Polygon Mumbai', 'Optimism Goerli'],
+      chains: ['Polygon Amoy', 'Optimism Sepolia'],
       gasOptimization: 55
     },
     {
@@ -66,7 +66,7 @@ const ChainAbstraction: React.FC = () => {
       name: 'Cross-Chain Lending',
       description: 'Lend and borrow across different lending protocols',
       icon: Database,
-      chains: ['Ethereum Sepolia', 'Arbitrum Goerli'],
+      chains: ['Ethereum Sepolia', 'Arbitrum Sepolia'],
       gasOptimization: 40
     },
     {
@@ -74,7 +74,7 @@ const ChainAbstraction: React.FC = () => {
       name: 'Compound Operations',
       description: 'Execute multiple DeFi operations in optimal sequence',
       icon: Layers,
-      chains: ['Ethereum Sepolia', 'Polygon Mumbai', 'Optimism Goerli'],
+      chains: ['Ethereum Sepolia', 'Polygon Amoy', 'Optimism Sepolia'],
       gasOptimization: 65
     }
   ]
@@ -99,7 +99,7 @@ const ChainAbstraction: React.FC = () => {
         id: 'op-1',
         type: 'swap',
         description: 'ETH → MATIC cross-chain swap',
-        chains: ['Ethereum Sepolia', 'Polygon Mumbai'],
+        chains: ['Ethereum Sepolia', 'Polygon Amoy'],
         status: 'executing',
         timestamp: new Date(Date.now() - 120000),
         estimatedTime: 180,
@@ -109,7 +109,7 @@ const ChainAbstraction: React.FC = () => {
         id: 'op-2',
         type: 'compound',
         description: 'Multi-chain yield optimization',
-        chains: ['Ethereum Sepolia', 'Optimism Goerli', 'Arbitrum Goerli'],
+        chains: ['Ethereum Sepolia', 'Optimism Sepolia', 'Arbitrum Sepolia'],
         status: 'completed',
         timestamp: new Date(Date.now() - 300000),
         estimatedTime: 0,
@@ -121,7 +121,7 @@ const ChainAbstraction: React.FC = () => {
     const mockCompactOps: CompactOperation[] = [
       {
         id: 'compact-1',
-        operations: ['Swap ETH→USDC', 'Bridge to Polygon', 'Stake USDC'],
+        operations: ['Swap ETH→USDC', 'Bridge to Polygon Amoy', 'Stake USDC'],
         totalGasSaved: 0.024,
         executionTime: 145,
         status: 'completed'
@@ -208,15 +208,15 @@ const ChainAbstraction: React.FC = () => {
       // The Compact: Batch multiple operations for gas efficiency
       const compactOperations = [
         { type: 'swap', fromToken: 'ETH', toToken: 'USDC', chain: 'Ethereum Sepolia' },
-        { type: 'bridge', token: 'USDC', fromChain: 'Ethereum Sepolia', toChain: 'Polygon Mumbai' },
-        { type: 'stake', token: 'USDC', protocol: 'Aave', chain: 'Polygon Mumbai' }
+        { type: 'bridge', token: 'USDC', fromChain: 'Ethereum Sepolia', toChain: 'Polygon Amoy' },
+        { type: 'stake', token: 'USDC', protocol: 'Aave', chain: 'Polygon Amoy' }
       ]
 
       const batchId = await polymerApi.submitIntentBatch(compactOperations)
 
       const newCompactOp: CompactOperation = {
         id: batchId,
-        operations: ['Swap ETH→USDC', 'Bridge to Polygon', 'Stake in Aave'],
+        operations: ['Swap ETH→USDC', 'Bridge to Polygon Amoy', 'Stake in Aave'],
         totalGasSaved: Math.random() * 0.05,
         executionTime: Math.floor(Math.random() * 200) + 100,
         status: 'pending'

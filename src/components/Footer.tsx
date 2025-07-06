@@ -46,7 +46,7 @@ const Footer: React.FC = () => {
               <li><a href="#" className="text-gray-300 hover:text-white transition-colors">CrossL2Prover Bridge</a></li>
               <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Multi-Rollup Apps</a></li>
               <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Chain Abstraction</a></li>
-              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">Analytics</a></li>
+              <li><a href="#" className="text-gray-300 hover:text-white transition-colors">IBC Protocol</a></li>
             </ul>
           </div>
           
@@ -88,12 +88,12 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <a 
-                  href="https://github.com/ditsyandrea22/TESTNET" 
+                  href="https://github.com/open-ibc/ibc-app-solidity-template" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1"
                 >
-                  <span>GitHub</span>
+                  <span>IBC Template</span>
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </li>
@@ -105,12 +105,12 @@ const Footer: React.FC = () => {
             <ul className="space-y-2 text-sm">
               <li>
                 <a 
-                  href="https://docs.polymerlabs.org/docs/learn/what-is-polymer" 
+                  href="https://polymerlabs.org/" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1"
                 >
-                  <span>What is Polymer?</span>
+                  <span>Polymer Labs</span>
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </li>
@@ -138,12 +138,12 @@ const Footer: React.FC = () => {
               </li>
               <li>
                 <a 
-                  href="https://x.com/Crypto_ditsy" 
+                  href="https://dashboard.polymerlabs.org/" 
                   target="_blank" 
                   rel="noopener noreferrer"
                   className="text-gray-300 hover:text-white transition-colors flex items-center space-x-1"
                 >
-                  <span>Follow Updates</span>
+                  <span>Dashboard</span>
                   <ExternalLink className="h-3 w-3" />
                 </a>
               </li>
@@ -167,13 +167,23 @@ const Footer: React.FC = () => {
             </a>
             <span className="text-gray-600">•</span>
             <a 
-              href="https://docs.polymerlabs.org/docs/build/start" 
+              href="https://polymerlabs.org/" 
               target="_blank" 
               rel="noopener noreferrer"
               className="text-gray-400 hover:text-white text-xs flex items-center space-x-1"
             >
               <Book className="h-3 w-3" />
-              <span>Polymer Docs</span>
+              <span>Polymer Labs</span>
+            </a>
+            <span className="text-gray-600">•</span>
+            <a 
+              href="https://x.com/Polymer_Labs" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              className="text-gray-400 hover:text-white text-xs flex items-center space-x-1"
+            >
+              <Twitter className="h-3 w-3" />
+              <span>@Polymer_Labs</span>
             </a>
             <span className="text-gray-600">•</span>
             <a 

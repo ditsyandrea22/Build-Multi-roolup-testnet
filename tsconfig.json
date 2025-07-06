@@ -17,9 +17,7 @@
     "noFallthroughCasesInSwitch": true,
     "baseUrl": ".",
     "paths": {
-      "@/*": ["./src/*"],
-      "@safe-globalThis/safe-apps-provider": ["node_modules/@safe-global/safe-apps-provider"],
-      "@safe-globalThis/safe-apps-sdk": ["node_modules/@safe-global/safe-apps-sdk"]
+      "@/*": ["./src/*"]
     }
   },
   "include": ["src"],

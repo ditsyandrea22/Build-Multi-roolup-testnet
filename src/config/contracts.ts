@@ -14,6 +14,17 @@ export const BRIDGE_CONTRACTS = {
     faucet: 'https://sepoliafaucet.com/',
     color: 'bg-blue-500'
   },
+  POLYGON_AMOY: {
+    address: import.meta.env.VITE_POLYGON_AMOY_BRIDGE || CROSSL2_PROVER_ADDRESS,
+    chainId: 80002,
+    name: 'Polygon Amoy',
+    symbol: 'MATIC',
+    decimals: 18,
+    explorer: 'https://amoy.polygonscan.com',
+    rpcUrl: 'https://rpc-amoy.polygon.technology',
+    faucet: 'https://faucet.polygon.technology/',
+    color: 'bg-purple-500'
+  },
   OPTIMISM_SEPOLIA: {
     address: import.meta.env.VITE_OPTIMISM_SEPOLIA_BRIDGE || CROSSL2_PROVER_ADDRESS,
     chainId: 11155420,
@@ -186,6 +197,7 @@ export const DEMO_MODE = import.meta.env.VITE_DEMO_MODE === 'true'
 // Minimum transfer amounts (in ETH)
 export const MIN_TRANSFER_AMOUNTS = {
   ETHEREUM_SEPOLIA: '0.001',
+  POLYGON_AMOY: '0.001',
   OPTIMISM_SEPOLIA: '0.001',
   ARBITRUM_SEPOLIA: '0.001',
   BASE_SEPOLIA: '0.001'
@@ -194,22 +206,32 @@ export const MIN_TRANSFER_AMOUNTS = {
 // Estimated transfer times (in seconds)
 export const TRANSFER_TIMES = {
   ETHEREUM_SEPOLIA: {
+    POLYGON_AMOY: 300,     // 5 minutes
     OPTIMISM_SEPOLIA: 300,  // 5 minutes
     ARBITRUM_SEPOLIA: 600,  // 10 minutes
     BASE_SEPOLIA: 300       // 5 minutes
   },
+  POLYGON_AMOY: {
+    ETHEREUM_SEPOLIA: 1800, // 30 minutes (withdrawal)
+    OPTIMISM_SEPOLIA: 300,  // 5 minutes
+    ARBITRUM_SEPOLIA: 300,  // 5 minutes
+    BASE_SEPOLIA: 300       // 5 minutes
+  },
   OPTIMISM_SEPOLIA: {
     ETHEREUM_SEPOLIA: 1800, // 30 minutes (withdrawal)
+    POLYGON_AMOY: 300,      // 5 minutes
     ARBITRUM_SEPOLIA: 300,  // 5 minutes
     BASE_SEPOLIA: 300       // 5 minutes
   },
   ARBITRUM_SEPOLIA: {
     ETHEREUM_SEPOLIA: 1800, // 30 minutes (withdrawal)
+    POLYGON_AMOY: 300,      // 5 minutes
     OPTIMISM_SEPOLIA: 300,  // 5 minutes
     BASE_SEPOLIA: 300       // 5 minutes
   },
   BASE_SEPOLIA: {
     ETHEREUM_SEPOLIA: 1800, // 30 minutes (withdrawal)
+    POLYGON_AMOY: 300,      // 5 minutes
     OPTIMISM_SEPOLIA: 300,  // 5 minutes
     ARBITRUM_SEPOLIA: 300   // 5 minutes
   }
