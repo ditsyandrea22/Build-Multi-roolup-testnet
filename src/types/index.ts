@@ -1,26 +1,40 @@
 export interface Chain {
-  id: string
-  name: string
-  symbol: string
-  color: string
-  rpcUrl: string
-  blockExplorer: string
+  id: number;
+  name: string;
+  rpc: string;
+  nativeCurrency: {
+    name: string;
+    symbol: string;
+    decimals: number;
+  };
+  blockExplorer: string;
+  icon: string;
 }
 
-export interface BridgeTransaction {
-  id: string
-  fromChain: string
-  toChain: string
-  amount: string
-  token: string
-  status: 'pending' | 'completed' | 'failed'
-  txHash?: string
-  timestamp: Date
-  estimatedTime: number
+export interface Transaction {
+  hash: string;
+  from: string;
+  to: string;
+  value: string;
+  gasPrice: string;
+  gasLimit: string;
+  status: 'pending' | 'confirmed' | 'failed';
+  timestamp: number;
+  chainId: number;
 }
 
-export interface PolymerConfig {
-  apiKey: string
-  network: 'mainnet' | 'testnet'
-  supportedChains: Chain[]
+export interface ProofRequest {
+  id: string;
+  txHash: string;
+  sourceChain: number;
+  targetChain: number;
+  status: 'pending' | 'proven' | 'failed';
+  timestamp: number;
+}
+
+export interface GasEstimate {
+  gasPrice: string;
+  gasLimit: string;
+  estimatedCost: string;
+  usdCost?: string;
 }
